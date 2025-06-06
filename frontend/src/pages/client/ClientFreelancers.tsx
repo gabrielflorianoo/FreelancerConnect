@@ -337,7 +337,7 @@ const ClientFreelancers = () => {
                             <div className="flex flex-col md:flex-row md:items-start space-y-4 md:space-y-0 md:space-x-6">
                                 <div className="flex-shrink-0">
                                     <Avatar className="h-16 w-16">
-                                        <AvatarImage src={freelancer.avatar} />
+                                        <AvatarImage src={freelancer.avatarUrl} />
                                         <AvatarFallback>
                                             {freelancer.name
                                                 .split(" ")

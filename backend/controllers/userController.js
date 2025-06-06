@@ -48,6 +48,7 @@ export const getUserById = async (req, res) => {
                 avatarUrl: true,
                 createdAt: true,
                 updatedAt: true,
+                phone: true,
                 // Inclui relacionamentos
                 jobsCreated: {
                     select: {
@@ -77,7 +78,7 @@ export const getUserById = async (req, res) => {
             return res.status(404).json({ message: "Usuário não encontrado" });
         }
 
-        res.json(user);
+        res.json({ user });
     } catch (error) {
         res.status(500).json({
             message: "Erro ao buscar usuário",
@@ -124,7 +125,7 @@ export const createUser = async (req, res) => {
         const token = jwt.sign(
             { id: newUser.id, email: newUser.email, role: newUser.role },
             process.env.JWT_SECRET,
-            { expiresIn: "2h" },
+            { expiresIn: "2h" }
         );
 
         res.cookie("token", token, {
@@ -169,7 +170,7 @@ export const loginUser = async (req, res) => {
         const token = jwt.sign(
             { id: user.id, email: user.email, role: user.role },
             process.env.JWT_SECRET,
-            { expiresIn: "24h" },
+            { expiresIn: "24h" }
         );
 
         res.cookie("token", token, {
@@ -268,27 +269,27 @@ export const deleteUser = async (req, res) => {
 export const getFreelancers = async (req, res) => {
     try {
         const { category, location, rating } = req.query;
-        
+
         // Construir o where com filtros dinâmicos
         let where = {
             role: "FREELANCER",
         };
-        
+
         // Filtro por categoria (serviço)
         if (category) {
             where.services = {
                 has: category,
             };
         }
-        
+
         // Filtro por localização
         if (location) {
             where.location = {
                 contains: location,
-                mode: 'insensitive'
+                mode: "insensitive",
             };
         }
-        
+
         const freelancers = await prisma.user.findMany({
             where,
             select: {
@@ -323,21 +324,26 @@ export const getFreelancers = async (req, res) => {
         let filteredFreelancers = freelancers;
         if (rating) {
             const minRating = parseFloat(rating);
-            
-            filteredFreelancers = freelancers.filter(freelancer => {
+
+            filteredFreelancers = freelancers.filter((freelancer) => {
                 // Calcula a média de avaliação para cada freelancer
-                if (!freelancer.reviews || freelancer.reviews.length === 0) return false;
-                const avgRating = freelancer.reviews.reduce((sum, review) => sum + review.rating, 0) / freelancer.reviews.length;
+                if (!freelancer.reviews || freelancer.reviews.length === 0)
+                    return false;
+                const avgRating =
+                    freelancer.reviews.reduce(
+                        (sum, review) => sum + review.rating,
+                        0
+                    ) / freelancer.reviews.length;
                 return avgRating >= minRating;
             });
         }
 
         // Garantir que o campo role exista na resposta
-        const freelancersWithRole = filteredFreelancers.map(freelancer => ({
+        const freelancersWithRole = filteredFreelancers.map((freelancer) => ({
             ...freelancer,
-            role: "FREELANCER"
+            role: "FREELANCER",
         }));
-        
+
         res.json(freelancersWithRole);
     } catch (error) {
         res.status(500).json({

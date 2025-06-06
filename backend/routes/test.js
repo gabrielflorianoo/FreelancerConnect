@@ -29,6 +29,10 @@ router.post("/populate", async (req, res) => {
                         role === "CLIENT"
                             ? faker.number.int({ min: 500, max: 5000 })
                             : undefined,
+                    phone: faker.phone.number(),
+                    avatarUrl: faker.image.avatar(),
+                    location: faker.location.streetAddress(),
+                    bio: role === "FREELANCER" ? faker.lorem.sentence() : undefined,
                 },
             });
             createdUsers.push(user);

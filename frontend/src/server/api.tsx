@@ -84,6 +84,7 @@ export const jobsAPI = {
     }) => api.get("/jobs", { params: filters }),
     getJobsByUser: (userId: string, status?: string) =>
         api.get(`/jobs/user/${userId}`, { params: { status } }),
+    getJobById: (id: string) => api.get(`/jobs/${id}`),
 
     // Protected routes    getJobById: (id: string) => api.get(`/jobs/${id}`),
     createJob: (jobData: Partial<Job>) => api.post("/jobs", jobData),

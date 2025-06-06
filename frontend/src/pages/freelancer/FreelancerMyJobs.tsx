@@ -40,6 +40,7 @@ import {
 import { jobsAPI } from "../../server/api";
 import { Job } from "../../types";
 import { useToast } from "../../hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 // Interface para o formato UI do job
 interface UIJob extends Job {
@@ -55,6 +56,7 @@ const FreelancerMyJobs = () => {
     const [loading, setLoading] = useState(true);
     const [jobs, setJobs] = useState<UIJob[]>([]);
     const { toast } = useToast();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchJobs = async () => {
@@ -423,6 +425,7 @@ const FreelancerMyJobs = () => {
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
+                                                        onClick={() => navigate(`/jobs/${job.id}`)}
                                                     >
                                                         <FileText className="h-4 w-4 mr-1" />
                                                         Ver Detalhes

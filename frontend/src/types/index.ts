@@ -1,5 +1,4 @@
 export interface User {
-    avatar: string;
     id: string;
     email: string;
     name: string;
@@ -21,6 +20,11 @@ export interface ClientProfile extends User {
 export interface FreelancerProfile extends User {
     role: "FREELANCER";
     services: string[];
+    hourlyRate?: number;
+    skills?: string[];
+    availability?: string;
+    experience?: string;
+    website?: string;
     bio: string;
 }
 

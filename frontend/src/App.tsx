@@ -22,6 +22,8 @@ import SettingsPage from "./pages/shared/Settings";
 import FreelancerProfile from "./pages/freelancer/FreelancerProfile";
 import FreelancerMyJobs from "./pages/freelancer/FreelancerMyJobs";
 import ClientFreelancers from "./pages/client/ClientFreelancers";
+import JobSinglePage from "./pages/job/JobSinglePage";
+import ProfileDetails from "./pages/shared/ProfileDetails";
 
 const queryClient = new QueryClient();
 
@@ -145,6 +147,23 @@ const App = () => {
                                 element={
                                     <ProtectedRoute>
                                         <SettingsPage />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            {/*  */}
+                            <Route
+                                path="/jobs/:id"
+                                element={
+                                    <ProtectedRoute>
+                                        <JobSinglePage />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/profile/:userId"
+                                element={
+                                    <ProtectedRoute>
+                                        <ProfileDetails />
                                     </ProtectedRoute>
                                 }
                             />
