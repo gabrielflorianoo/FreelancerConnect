@@ -29,7 +29,7 @@ const Register = () => {
         | null;
 
     const [userType, setUserType] = useState<"CLIENT" | "FREELANCER">(
-        initialUserType || "CLIENT"
+        initialUserType || "CLIENT",
     );
     const [formData, setFormData] = useState({
         name: "",
@@ -78,7 +78,7 @@ const Register = () => {
             navigate(
                 userType === "CLIENT"
                     ? "/client/dashboard"
-                    : "/freelancer/dashboard"
+                    : "/freelancer/dashboard",
             );
         } catch (error) {
             console.error("Error during registration:", error);
@@ -274,7 +274,7 @@ const Register = () => {
                                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                                         onClick={() =>
                                             setShowConfirmPassword(
-                                                !showConfirmPassword
+                                                !showConfirmPassword,
                                             )
                                         }
                                     >

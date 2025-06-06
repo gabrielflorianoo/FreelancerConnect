@@ -50,6 +50,100 @@ export const getAllJobs = async (req, res) => {
     }
 };
 
+export const getAllJobsOfUser = async (req, res) => {
+    const userId = req.user.id; // Assume que temos o ID do usuário do middleware de autenticação
+    const { status } = req.body;
+
+    try {
+        // Verificar se o usuário é um cliente ou freelancer
+        const userRole = req.user.role;
+
+        if (status === undefined) {
+            let jobs;
+            if (userRole === "CLIENT") {
+                jobs = await prisma.job.findMany({
+                    where: { clientId: userId },
+                    include: {
+                        freelancer: {
+                            select: {
+                                id: true,
+                                name: true,
+                                avatarUrl: true,
+                            },
+                        },
+                    },
+                    orderBy: {
+                        createdAt: "desc",
+                    },
+                });
+            } else if (userRole === "FREELANCER") {
+                jobs = await prisma.job.findMany({
+                    where: { freelancerId: userId },
+                    include: {
+                        client: {
+                            select: {
+                                id: true,
+                                name: true,
+                                avatarUrl: true,
+                            },
+                        },
+                    },
+                    orderBy: {
+                        createdAt: "desc",
+                    },
+                });
+            } else {
+                return res.status(403).json({ message: "Acesso negado" });
+            }
+            res.json({ jobs });
+        }
+
+        let jobs;
+        if (userRole === "CLIENT") {
+            jobs = await prisma.job.findMany({
+                where: { clientId: userId, status },
+                include: {
+                    freelancer: {
+                        select: {
+                            id: true,
+                            name: true,
+                            avatarUrl: true,
+                        },
+                    },
+                },
+                orderBy: {
+                    createdAt: "desc",
+                },
+            });
+        } else if (userRole === "FREELANCER") {
+            jobs = await prisma.job.findMany({
+                where: { freelancerId: userId, status },
+                include: {
+                    client: {
+                        select: {
+                            id: true,
+                            name: true,
+                            avatarUrl: true,
+                        },
+                    },
+                },
+                orderBy: {
+                    createdAt: "desc",
+                },
+            });
+        } else {
+            return res.status(403).json({ message: "Acesso negado" });
+        }
+
+        res.json({ jobs });
+    } catch (error) {
+        res.status(500).json({
+            message: "Erro ao buscar jobs do usuário",
+            error: error.message,
+        });
+    }
+};
+
 // Obter um job pelo ID
 export const getJobById = async (req, res) => {
     const { id } = req.params;
@@ -107,7 +201,7 @@ export const getJobById = async (req, res) => {
 
 // Criar um novo job
 export const createJob = async (req, res) => {
-    const { title, description, category, location, price } = req.body;
+    const { title, description, category, location, budget, deadline } = req.body;
     const clientId = req.user.id; // Assume que temos o ID do usuário do middleware de autenticação
 
     try {
@@ -117,10 +211,11 @@ export const createJob = async (req, res) => {
                 description,
                 category,
                 location,
-                price: parseFloat(price),
+                budget: parseFloat(budget),
                 client: {
                     connect: { id: clientId },
                 },
+                deadline: deadline ? new Date(deadline) : null, // Converte a data se fornecida
             },
             include: {
                 client: {
@@ -135,6 +230,7 @@ export const createJob = async (req, res) => {
 
         res.status(201).json(newJob);
     } catch (error) {
+        console.error("Erro ao criar job:", error);
         res.status(500).json({
             message: "Erro ao criar job",
             error: error.message,
@@ -145,7 +241,7 @@ export const createJob = async (req, res) => {
 // Atualizar um job
 export const updateJob = async (req, res) => {
     const { id } = req.params;
-    const { title, description, category, location, price } = req.body;
+    const { title, description, category, location, budget, deadline } = req.body;
     const userId = req.user.id; // Assume que temos o ID do usuário do middleware de autenticação
 
     try {
@@ -172,7 +268,8 @@ export const updateJob = async (req, res) => {
                 description,
                 category,
                 location,
-                price: parseFloat(price),
+                budget: parseFloat(budget),
+                deadline: deadline ? new Date(deadline) : null,
             },
         });
 
@@ -341,7 +438,7 @@ export const completeJob = async (req, res) => {
         await prisma.payment.create({
             data: {
                 jobId: id,
-                amount: existingJob.price,
+                amount: existingJob.budget,
                 status: "COMPLETED",
                 method: "simulado",
             },
@@ -352,7 +449,7 @@ export const completeJob = async (req, res) => {
             where: { id: existingJob.freelancerId },
             data: {
                 balance: {
-                    increment: existingJob.price,
+                    increment: existingJob.budget,
                 },
             },
         });
@@ -427,6 +524,161 @@ export const cancelJob = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: "Erro ao cancelar job",
+            error: error.message,
+        });
+    }
+};
+
+// Obter jobs por ID de usuário (pode ser um usuário específico diferente do autenticado)
+export const getJobsByUser = async (req, res) => {
+    const { userId } = req.params;
+    const { status } = req.query;
+
+    try {
+        // Construir o filtro baseado na query
+        const filter = { clientId: userId };
+
+        if (status) {
+            filter.status = status;
+        }
+
+        // Buscar os jobs criados pelo usuário
+        const jobs = await prisma.job.findMany({
+            where: filter,
+            include: {
+                client: {
+                    select: {
+                        id: true,
+                        name: true,
+                        avatarUrl: true,
+                    },
+                },
+                freelancer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        avatarUrl: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+        });
+
+        res.json(jobs);
+    } catch (error) {
+        res.status(500).json({
+            message: "Erro ao buscar jobs do usuário",
+            error: error.message,
+        });
+    }
+};
+
+// Buscar jobs criados pelo cliente autenticado
+export const getMyCreatedJobs = async (req, res) => {
+    const userId = req.user.id;
+    const { status } = req.query;
+
+    try {
+        // Verificar se o usuário é um cliente
+        if (req.user.role !== "CLIENT" && req.user.role !== "ADMIN") {
+            return res.status(403).json({
+                message: "Apenas clientes podem acessar seus jobs criados",
+            });
+        }
+
+        // Construir o filtro baseado na query
+        const filter = { clientId: userId };
+
+        if (status) {
+            filter.status = status;
+        }
+
+        // Buscar os jobs criados pelo usuário
+        const jobs = await prisma.job.findMany({
+            where: filter,
+            include: {
+                client: {
+                    select: {
+                        id: true,
+                        name: true,
+                        avatarUrl: true,
+                    },
+                },
+                freelancer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        avatarUrl: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+        });
+
+        res.json(jobs);
+    } catch (error) {
+        res.status(500).json({
+            message: "Erro ao buscar jobs criados",
+            error: error.message,
+        });
+    }
+};
+
+// Buscar jobs aceitos pelo freelancer autenticado
+export const getMyAcceptedJobs = async (req, res) => {
+    const userId = req.user.id;
+    const { status } = req.query;
+
+    try {
+        // Verificar se o usuário é um freelancer
+        if (req.user.role !== "FREELANCER") {
+            return res.status(403).json({
+                message: "Apenas freelancers podem acessar seus jobs aceitos",
+            });
+        }
+
+        // Construir o filtro baseado na query
+        const filter = { freelancerId: userId };
+
+        if (status) {
+            filter.status = status;
+        } else {
+            // Se não especificado, mostrar apenas jobs aceitos ou completos
+            filter.status = { in: ["ACCEPTED", "COMPLETED"] };
+        }
+
+        // Buscar os jobs aceitos pelo freelancer
+        const jobs = await prisma.job.findMany({
+            where: filter,
+            include: {
+                client: {
+                    select: {
+                        id: true,
+                        name: true,
+                        avatarUrl: true,
+                    },
+                },
+                freelancer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        avatarUrl: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+        });
+
+        res.json(jobs);
+    } catch (error) {
+        res.status(500).json({
+            message: "Erro ao buscar jobs aceitos",
             error: error.message,
         });
     }

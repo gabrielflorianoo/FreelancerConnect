@@ -29,8 +29,11 @@ export interface Job {
     title: string;
     description: string;
     category: string;
-    price: number;
+    budget: number | string;
     status: "PENDING" | "ACCEPTED" | "COMPLETED" | "CANCELLED";
+    skills: string[];
+    experience?: string;
+    deadline?: string;
     clientId: string;
     freelancerId?: string;
     createdAt: string;

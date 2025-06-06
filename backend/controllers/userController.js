@@ -124,7 +124,7 @@ export const createUser = async (req, res) => {
         const token = jwt.sign(
             { id: newUser.id, email: newUser.email, role: newUser.role },
             process.env.JWT_SECRET,
-            { expiresIn: "2h" }
+            { expiresIn: "2h" },
         );
 
         res.cookie("token", token, {
@@ -169,7 +169,7 @@ export const loginUser = async (req, res) => {
         const token = jwt.sign(
             { id: user.id, email: user.email, role: user.role },
             process.env.JWT_SECRET,
-            { expiresIn: "24h" }
+            { expiresIn: "24h" },
         );
 
         res.cookie("token", token, {
@@ -267,27 +267,78 @@ export const deleteUser = async (req, res) => {
 // Obter freelancers
 export const getFreelancers = async (req, res) => {
     try {
+        const { category, location, rating } = req.query;
+        
+        // Construir o where com filtros dinâmicos
+        let where = {
+            role: "FREELANCER",
+        };
+        
+        // Filtro por categoria (serviço)
+        if (category) {
+            where.services = {
+                has: category,
+            };
+        }
+        
+        // Filtro por localização
+        if (location) {
+            where.location = {
+                contains: location,
+                mode: 'insensitive'
+            };
+        }
+        
         const freelancers = await prisma.user.findMany({
-            where: {
-                role: "FREELANCER",
-            },
+            where,
             select: {
                 id: true,
                 name: true,
+                email: true,
                 location: true,
                 bio: true,
                 services: true,
                 avatarUrl: true,
+                createdAt: true,
+                updatedAt: true,
+                phone: true,
+                balance: true,
                 reviews: {
                     select: {
+                        id: true,
                         rating: true,
                         comment: true,
+                    },
+                },
+                jobsTaken: {
+                    select: {
+                        id: true,
+                        status: true,
                     },
                 },
             },
         });
 
-        res.json(freelancers);
+        // Filtro por rating (aplicado após a consulta porque precisamos calcular a média)
+        let filteredFreelancers = freelancers;
+        if (rating) {
+            const minRating = parseFloat(rating);
+            
+            filteredFreelancers = freelancers.filter(freelancer => {
+                // Calcula a média de avaliação para cada freelancer
+                if (!freelancer.reviews || freelancer.reviews.length === 0) return false;
+                const avgRating = freelancer.reviews.reduce((sum, review) => sum + review.rating, 0) / freelancer.reviews.length;
+                return avgRating >= minRating;
+            });
+        }
+
+        // Garantir que o campo role exista na resposta
+        const freelancersWithRole = filteredFreelancers.map(freelancer => ({
+            ...freelancer,
+            role: "FREELANCER"
+        }));
+        
+        res.json(freelancersWithRole);
     } catch (error) {
         res.status(500).json({
             message: "Erro ao buscar freelancers",
@@ -369,4 +420,4 @@ export const logoutUser = (req, res) => {
     res.clearCookie("token");
 
     res.status(200).json({ message: "Logout realizado com sucesso" });
-}
+};

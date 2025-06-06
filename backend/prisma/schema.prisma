@@ -49,7 +49,9 @@ model Job {
     description String
     category    String
     location    String
-    price       Float
+    budget      Float
+    deadline    DateTime
+    proposals   String[] // IDs dos freelancers que propuseram
     status      JobStatus @default(PENDING)
     createdAt   DateTime  @default(now())
     updatedAt   DateTime  @updatedAt

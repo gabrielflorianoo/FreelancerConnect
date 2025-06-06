@@ -1,5 +1,14 @@
 import axios from "axios";
-import { User, Job, Message, Review, Payment, ClientProfile, FreelancerProfile, RegisterData } from "../types";
+import {
+    User,
+    Job,
+    Message,
+    Review,
+    Payment,
+    ClientProfile,
+    FreelancerProfile,
+    RegisterData,
+} from "../types";
 
 const api = axios.create({
     baseURL: "http://localhost:3000/api",
@@ -14,7 +23,7 @@ export const authAPI = {
         name: string;
         email: string;
         password: string;
-        role: 'CLIENT' | 'FREELANCER';
+        role: "CLIENT" | "FREELANCER";
         location?: string;
         phone?: string;
     }) => api.post("/users/register", userData),
@@ -39,8 +48,9 @@ export const userAPI = {
         rating?: string;
     }) => api.get("/users/freelancers", { params: filters }),
     getUserById: (id: string) => api.get(`/users/profile/${id}`),
-    createUser: (userData: RegisterData) => api.post("/users/register", userData),
-    
+    createUser: (userData: RegisterData) =>
+        api.post("/users/register", userData),
+
     // Protected routes
     updateProfile: (
         id: string,
@@ -65,22 +75,19 @@ export const userAPI = {
 // ===== Jobs Routes ======
 // ========================
 export const jobsAPI = {
-    // Public routes    
+    // Public routes
     getAllJobs: (filters: {
         category?: string;
         location?: string;
-        status?: 'PENDING' | 'ACCEPTED' | 'COMPLETED' | 'CANCELLED';
+        status?: "PENDING" | "ACCEPTED" | "COMPLETED" | "CANCELLED";
         price?: string;
     }) => api.get("/jobs", { params: filters }),
+    getJobsByUser: (userId: string, status?: string) =>
+        api.get(`/jobs/user/${userId}`, { params: { status } }),
 
     // Protected routes    getJobById: (id: string) => api.get(`/jobs/${id}`),
-    createJob: (jobData: {
-        title: string;
-        description: string;
-        category: string;
-        price: number;
-        location: string;
-    }) => api.post("/jobs", jobData),    updateJob: (
+    createJob: (jobData: Partial<Job>) => api.post("/jobs", jobData),
+    updateJob: (
         id: string,
         jobData: {
             title?: string;
@@ -88,7 +95,7 @@ export const jobsAPI = {
             category?: string;
             price?: number;
             location?: string;
-            status?: 'PENDING' | 'ACCEPTED' | 'COMPLETED' | 'CANCELLED';
+            status?: "PENDING" | "ACCEPTED" | "COMPLETED" | "CANCELLED";
         }
     ) => api.put(`/jobs/${id}`, jobData),
     deleteJob: (id: string) => api.delete(`/jobs/${id}`),
@@ -99,10 +106,14 @@ export const jobsAPI = {
     cancelJob: (id: string) => api.put(`/jobs/${id}/cancel`),
 
     // Client routes
-    getMyCreatedJobs: () => api.get("/jobs/my/created"),
+    getMyCreatedJobs: (
+        status?: "PENDING" | "ACCEPTED" | "COMPLETED" | "CANCELLED"
+    ) => api.get("/jobs/my/created", { params: { status } }),
 
     // Freelancer routes
-    getMyAcceptedJobs: () => api.get("/jobs/my/accepted"),
+    getMyAcceptedJobs: (
+        status?: "PENDING" | "ACCEPTED" | "COMPLETED" | "CANCELLED"
+    ) => api.get("/jobs/my/accepted", { params: { status } }),
 };
 
 // ========================
@@ -124,7 +135,8 @@ export const reviewAPI = {
         api.get(`/reviews/freelancer/${freelancerId}`),
 
     // Protected routes
-    getReviewById: (id: string) => api.get(`/reviews/${id}`),    createReview: (
+    getReviewById: (id: string) => api.get(`/reviews/${id}`),
+    createReview: (
         jobId: string,
         reviewData: { rating: number; comment?: string }
     ) => api.post(`/reviews/job/${jobId}`, reviewData),
@@ -144,7 +156,8 @@ export const paymentAPI = {
 
     // Protected routes
     getUserPayments: () => api.get("/payments/user"),
-    getPaymentById: (id: string) => api.get(`/payments/${id}`),    processPayment: (
+    getPaymentById: (id: string) => api.get(`/payments/${id}`),
+    processPayment: (
         jobId: string,
         paymentData: { amount: number; method: string }
     ) => api.post(`/payments/job/${jobId}`, paymentData),

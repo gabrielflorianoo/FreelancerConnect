@@ -15,14 +15,17 @@ import jobsRouter from "./routes/jobs.js";
 import messagesRouter from "./routes/messages.js";
 import reviewsRouter from "./routes/reviews.js";
 import paymentsRouter from "./routes/payments.js";
+import testRouter from "./routes/test.js";
 
 const app = express();
 
 // Middleware
-app.use(cors({
-    origin: process.env.CORS_ORIGIN,
-    credentials: true, // Permitir cookies e credenciais
-}));
+app.use(
+    cors({
+        origin: process.env.CORS_ORIGIN,
+        credentials: true, // Permitir cookies e credenciais
+    }),
+);
 app.use(logger("dev"));
 app.use(json());
 app.use(urlencoded({ extended: false }));
@@ -35,6 +38,7 @@ app.use("/api/jobs", jobsRouter);
 app.use("/api/messages", messagesRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/payments", paymentsRouter);
+app.use("/api/tests", testRouter);
 
 app.use(function (req, res, next) {
     next(createError(404));

@@ -12,6 +12,16 @@ import ClientDashboard from "./pages/client/ClientDashboard";
 import FreelancerDashboard from "./pages/freelancer/FreelancerDashboard";
 import NotFound from "./pages/NotFound";
 import React, { useEffect } from "react";
+import CreateJob from "./pages/client/CreateJob";
+import ClientJobs from "./pages/client/ClientJobs";
+import FreelancerJobs from "./pages/freelancer/FreelancerJobs";
+import Messages from "./pages/shared/Messages";
+import Reviews from "./pages/shared/Reviews";
+import Payments from "./pages/shared/Payments";
+import SettingsPage from "./pages/shared/Settings";
+import FreelancerProfile from "./pages/freelancer/FreelancerProfile";
+import FreelancerMyJobs from "./pages/freelancer/FreelancerMyJobs";
+import ClientFreelancers from "./pages/client/ClientFreelancers";
 
 const queryClient = new QueryClient();
 
@@ -26,17 +36,21 @@ const ProtectedRoute = ({
     userType?: "CLIENT" | "FREELANCER" | "ADMIN";
 }) => {
     const { isAuthenticated, user, loading } = useAuthStore();
-    
+
     // Use useEffect para verificar a autenticação apenas uma vez na montagem
     React.useEffect(() => {
         if (!isAuthenticated && !loading) {
             checkAuth();
         }
     }, [isAuthenticated, loading]);
-    
+
     // Se estiver carregando, mostre um indicador de carregamento
     if (loading) {
-        return <div className="flex items-center justify-center h-screen">Carregando...</div>;
+        return (
+            <div className="flex items-center justify-center h-screen">
+                Carregando...
+            </div>
+        );
     }
 
     // Se não estiver autenticado após a verificação, redirecione
@@ -45,7 +59,7 @@ const ProtectedRoute = ({
     }
 
     // Se o tipo de usuário não corresponder, redirecione
-    if (userType && user?.role !== userType) {
+    if (userType && user?.role != userType) {
         const redirectPath =
             user?.role === "CLIENT"
                 ? "/client/dashboard"
@@ -58,7 +72,7 @@ const ProtectedRoute = ({
 
 const App = () => {
     const { isAuthenticated, user } = useAuthStore();
-    
+
     // Verificar autenticação quando o App for montado
     useEffect(() => {
         checkAuth();
@@ -125,12 +139,70 @@ const App = () => {
                                 }
                             />
 
+                            {/* Settings */}
+                            <Route
+                                path="/settings"
+                                element={
+                                    <ProtectedRoute>
+                                        <SettingsPage />
+                                    </ProtectedRoute>
+                                }
+                            />
+
                             {/* Client routes */}
                             <Route
                                 path="/client/dashboard"
                                 element={
                                     <ProtectedRoute userType="CLIENT">
                                         <ClientDashboard />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/client/create-job"
+                                element={
+                                    <ProtectedRoute userType="CLIENT">
+                                        <CreateJob />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/client/jobs"
+                                element={
+                                    <ProtectedRoute userType="CLIENT">
+                                        <ClientJobs />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/client/freelancers"
+                                element={
+                                    <ProtectedRoute userType="CLIENT">
+                                        <ClientFreelancers />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/client/messages"
+                                element={
+                                    <ProtectedRoute userType="CLIENT">
+                                        <Messages />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/client/reviews"
+                                element={
+                                    <ProtectedRoute userType="CLIENT">
+                                        <Reviews />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/client/payments"
+                                element={
+                                    <ProtectedRoute userType="CLIENT">
+                                        <Payments />
                                     </ProtectedRoute>
                                 }
                             />
@@ -141,6 +213,54 @@ const App = () => {
                                 element={
                                     <ProtectedRoute userType="FREELANCER">
                                         <FreelancerDashboard />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/freelancer/jobs"
+                                element={
+                                    <ProtectedRoute userType="FREELANCER">
+                                        <FreelancerJobs />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/freelancer/my-jobs"
+                                element={
+                                    <ProtectedRoute userType="FREELANCER">
+                                        <FreelancerMyJobs />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/freelancer/messages"
+                                element={
+                                    <ProtectedRoute userType="FREELANCER">
+                                        <Messages />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/freelancer/reviews"
+                                element={
+                                    <ProtectedRoute userType="FREELANCER">
+                                        <Reviews />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/freelancer/payments"
+                                element={
+                                    <ProtectedRoute userType="FREELANCER">
+                                        <Payments />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/freelancer/profile"
+                                element={
+                                    <ProtectedRoute userType="FREELANCER">
+                                        <FreelancerProfile />
                                     </ProtectedRoute>
                                 }
                             />

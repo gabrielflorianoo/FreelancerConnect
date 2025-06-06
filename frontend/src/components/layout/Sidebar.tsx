@@ -52,7 +52,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     ];
 
     const navItems =
-        user?.userType === "client" ? clientNavItems : freelancerNavItems;
+        user?.role === "CLIENT" ? clientNavItems : freelancerNavItems;
 
     return (
         <>
@@ -68,7 +68,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             <div
                 className={cn(
                     "fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
-                    isOpen ? "translate-x-0" : "-translate-x-full",
+                    isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
                 <div className="flex flex-col h-full">
@@ -98,7 +98,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                         "flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                                         isActive
                                             ? "bg-primary-50 text-primary-600 border-r-2 border-primary-600"
-                                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+                                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                                     )}
                                 >
                                     <Icon className="mr-3 h-5 w-5" />
