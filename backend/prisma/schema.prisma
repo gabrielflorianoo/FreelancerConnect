@@ -1,0 +1,102 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum Role {
+    CLIENT
+    FREELANCER
+    ADMIN
+}
+
+enum JobStatus {
+    PENDING
+    ACCEPTED
+    COMPLETED
+    CANCELLED
+}
+
+model User {
+    id        String   @id @default(uuid())
+    email     String   @unique
+    password  String
+    name      String
+    role      Role     @default(CLIENT)
+    location  String?
+    bio       String?
+    phone     String?
+    services  String[] // apenas para freelancers
+    avatarUrl String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    jobsCreated Job[]     @relation("JobsByClient")
+    jobsTaken   Job[]     @relation("JobsByFreelancer")
+    reviews     Review[]  @relation("FreelancerReviews")
+    messages    Message[] @relation("Sender")
+
+    // Wallet simulação
+    balance Float @default(0)
+}
+
+model Job {
+    id          String    @id @default(uuid())
+    title       String
+    description String
+    category    String
+    location    String
+    price       Float
+    status      JobStatus @default(PENDING)
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    clientId     String
+    freelancerId String?
+
+    client     User  @relation("JobsByClient", fields: [clientId], references: [id])
+    freelancer User? @relation("JobsByFreelancer", fields: [freelancerId], references: [id])
+
+    messages Message[]
+    review   Review?
+    payment  Payment?
+}
+
+model Message {
+    id        String   @id @default(uuid())
+    content   String
+    createdAt DateTime @default(now())
+
+    senderId String
+    jobId    String
+
+    sender User @relation("Sender", fields: [senderId], references: [id])
+    job    Job  @relation(fields: [jobId], references: [id])
+}
+
+model Review {
+    id        String   @id @default(uuid())
+    rating    Int // 1-5
+    comment   String?
+    createdAt DateTime @default(now())
+
+    jobId        String @unique
+    freelancerId String
+
+    job        Job  @relation(fields: [jobId], references: [id])
+    freelancer User @relation("FreelancerReviews", fields: [freelancerId], references: [id])
+}
+
+model Payment {
+    id        String   @id @default(uuid())
+    jobId     String   @unique
+    amount    Float
+    status    String
+    method    String // ex: stripe, pix, simulado
+    createdAt DateTime @default(now())
+
+    job Job @relation(fields: [jobId], references: [id])
+}
